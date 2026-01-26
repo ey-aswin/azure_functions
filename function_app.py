@@ -37,7 +37,7 @@ def hellowworld(req: func.HttpRequest) -> func.HttpResponse:
 
 
 @app.route(route="health", auth_level=func.AuthLevel.ANONYMOUS)
-def hellowworld(req: func.HttpRequest) -> func.HttpResponse:
+def healthFunc(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Python HTTP trigger function processed a request.")
     try:
         # result = emptyCosmosDB()
