@@ -1,0 +1,37 @@
+
+# Ignore Python virtual environments
+.venv/
+venv/
+env/
+env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local settings (never publish secrets)
+local.settings.json
+
+# Build artifacts
+bin/
+obj/
+.python_packages/
+
+# Git
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs & temp
+*.log
+.npmrc
+node_modules/
