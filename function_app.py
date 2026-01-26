@@ -104,3 +104,8 @@ def deletion_trigger(myTimer: func.TimerRequest) -> None:
         pass
     except Exception as e:
         logging.exception("Timer job failed: %s", str(e))
+
+@app.function_name(name="HttpTrigger1")
+@app.route(route="hello")
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    return func.HttpResponse("Hello, World!")
