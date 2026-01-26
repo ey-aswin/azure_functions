@@ -1,5 +1,8 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+# More info on Python, GitHub Actions, and Azure Functions: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python Azure Function (Flex Consumption)
+name: Build and deploy Python project to Azure Function App - testfuncgrps
 
 on:
   push:
@@ -8,43 +11,55 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_NAME: testfuncgrps
-  PYTHON_VERSION: '3.10'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
+  PYTHON_VERSION: '3.11' # set this to the python version to use (supports 3.6, 3.7, 3.8, 3.9, 3.10, 3.11)
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read #This is required for actions/checkout
 
     steps:
-      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Python (MUST match Azure)
-      - name: Setup Python
+      - name: Setup Python version
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      # 3️⃣ Install dependencies into .python_packages (CRITICAL)
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt --target=".python_packages/lib/site-packages"
+        run: pip install -r requirements.txt
 
-      # 4️⃣ Create deployment ZIP (ONLY required files)
-      - name: Create deployment package
-        run: |
-          zip -r release.zip \
-            host.json \
-            *.py \
-            */ \
-            .python_packages
+      # Optional: Add step to run tests here
 
-      # 5️⃣ Deploy using OneDeploy (ZipDeploy)
-      - name: Deploy to Azure Functions
-        uses: Azure/functions-action@v1
+      - name: Zip artifact for deployment
+        run: zip -r release.zip . -x ".git/*" "__pycache__/*" ".myenv/*" ".vscode/*" ".python_packages/*" "*.pyc" ".gitignore" ".funcignore" "local.settings.json"
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
         with:
-          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: release.zip
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+          name: python-app
+          path: |
+            release.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+        
+      - name: 'Deploy to Azure Functions'
+        uses: Azure/functions-action@v1
+        id: deploy-to-function
+        with:
+          app-name: 'testfuncgrps'
+          slot-name: 'Production'
+          package: release.zip  # Deploy the zip directly instead of unzipping
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_4999A99F89F24FF994EDEE34B1E8825B }}
+          sku: 'flexconsumption'
